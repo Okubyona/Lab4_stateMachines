@@ -40,39 +40,11 @@ echo Running all tests..."\n\n
 
 # Add tests below
 
-# Test sequence from waitUnLit: !PA0, PA0 => PORTB: 0x01     
-test "PINA: 0x00, 0x01 => PORTB:0x01;
-set state = waitUnLit
-setPINA 0x00
-continue 2
-setPINA 0x01
-continue 2
-expectPORTB 0x01
-expect state unLit
-checkResult
+# Test sequence from start: No input => PORTC: 0x07
+test "PINA: No Input => PORTC = 0x07     
 
-# Test sequence from waitUnLit: 
-test "PINA: 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00 => PORTB: 0x02"
-set state = waitUnLit
-setPINA 0x00
-continue 2
-setPINA 0x01
-continue 2
-setPINA 0x01
-continue 2
-setPINA 0x00
-continue 2
-setPINA 0x00
-continue 2
-setPINA 0x01
-continue 2
-setPINA 0x01
-continue 2
-setPINA 0x00
-continue 2
-expectPORTB 0x02
-expect state waitUnLit
-checkResult
+
+
 
 # Report on how many tests passed/tests ran
 set $passed=$tests-$failed
