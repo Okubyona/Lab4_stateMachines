@@ -1,6 +1,6 @@
 /*	Author: Andrew Bazua
  *  Partner(s) Name:
- *	Lab Section:023
+ *	Lab Section:024
  *	Assignment: Lab #4  Exercise #2
  *	Exercise Description: [Buttons are connected to PA0 and PA1. Output for PORTC
         is initially 7. Pressing PA0 increments PORTC once (stopping at 9).
@@ -15,7 +15,7 @@
 #include "simAVRHeader.h"
 #endif
 
-typedef enum States {init, waitA, waitInc, waitDec, increment, decrement, reset} States;
+typedef enum States {init, wait, increment, waitInc, decrement, waitDec, reset} States;
 
 int counter(int);
 
@@ -25,7 +25,6 @@ int main(void) {
     DDRC = 0xFF; PORTC = 0x00;
 
     States state = init;
-
     /* Insert your solution below */
     while (1) {
         state = counter(state);
@@ -41,70 +40,66 @@ int counter(int state) {
 
     switch (state) {        //TRANSITIONS
         case init:
-            state = waitA;
+            state = wait;
             tmpC = 0x07;
             break;
-
-        case waitA:
-            if (A0 && !A1){ state = increment; }
+        case wait:
+            if (!A0 && !A1) { state = wait; }
+            else if (A0 && !A1) { state = increment; }
             else if (!A0 && A1) { state = decrement; }
-            else if (A0 && A1) { state = reset; }
-            else { state = waitA; }
+            else if (!A0 && !A1) { state = reset; }
             break;
 
         case increment:
-            if (A0 && !A1) { state = waitInc; }
-            else if (A0 && A1) { state = reset; }
-            else if (!A0 && !A1) { state = waitA; }
+            state = waitInc;
             break;
 
         case waitInc:
-            if (!A0 && !A1) { state = waitA; }
-            else if (A0 && !A1) { state = waitInc; }
+            if (A0 && !A1) { state = waitInc; }
+            else if (!A0 && A1) { state = decrement; }
             else if (A0 && A1) { state = reset; }
+            else { state = wait;}
             break;
 
         case decrement:
-            if (!A0 && A1) { state = waitDec; }
-            else if (A0 && A1) { state = reset; }
-            else if (!A0 && !A1) { state = waitA; }
+            state = waitDec;
             break;
 
         case waitDec:
-            if (!A0 && !A1) { state = waitA; }
-            else if (A0 && A1) { state = reset; }
+            if (A0 && !A1) { state = increment; }
             else if (!A0 && A1) { state = waitDec; }
+            else if (A0 && A1) { state = reset; }
+            else { state = wait;}
             break;
 
         case reset:
-            state = (A0 && A1)? reset: waitA;
+            state = (A0 && A1) ? reset: wait;
             break;
 
         default:
-            state = init;
-            tmpC = 0x07;
+            state = wait;
             break;
     }
 
     switch (state) {        //ACTIONS
-        case init: break;
-
-        case waitA: break;
+        case wait: break;
 
         case increment:
-            if (tmpC < 7) { ++tmpC; }
+            if (tmpC < 9) { ++tmpC; }
             break;
 
-        case waitInc: break;
+        case waitInc:
+            break;
 
         case decrement:
             if (tmpC > 0) { --tmpC; }
             break;
 
-        case waitDec: break;
+        case waitDec:
+            break;
 
         case reset:
-            tmpC = 0x00;
+            tmpC = 0;
             break;
     }
 
