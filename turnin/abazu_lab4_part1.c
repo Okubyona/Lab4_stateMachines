@@ -1,10 +1,10 @@
 /*	Author: Andrew Bazua
  *  Partner(s) Name:
- *	Lab Section:023
+ *	Lab Section:024
  *	Assignment: Lab #4  Exercise #1
- *	Exercise Description: [PB0 and PB1 each connect to an LED, and PB0's LED is 
-        initially on. Pressing a button connected to PA0 turns off PB0's LED and 
-        turns on PB1's LED, staying that way after button release. Pressing the 
+ *	Exercise Description: [PB0 and PB1 each connect to an LED, and PB0's LED is
+        initially on. Pressing a button connected to PA0 turns off PB0's LED and
+        turns on PB1's LED, staying that way after button release. Pressing the
         button again turns off PB1's LED and turns on PB0's LED.]
  *
  *	I acknowledge all content contained herein, excluding template or example
@@ -15,7 +15,7 @@
 #include "simAVRHeader.h"
 #endif
 
-typedef enum States {start, waitUnLit, unLit, waitLit, lit} States;
+typedef enum States {start, waitPress, buttonPress, waitA0} States;
 
 int lightTick(int);
 
@@ -34,52 +34,44 @@ int main(void) {
 }
 
 int lightTick(int state) {
-    static unsigned char b;
+    static unsigned char b = 0x01;
 
     unsigned char A0 = PINA & 0x01;
 
     switch (state) {        //TRANSITIONS
         case start:
-            state = waitUnLit;
+            state = waitPress;
             break;
 
-        case waitUnLit:
-            state = A0? unLit: waitUnLit;
+        case waitPress:
+            state = A0 ? buttonPress : waitPress;
             break;
 
-        case unLit:
-            state = A0? unLit: waitLit;
+        case buttonPress:
+            state = waitA0;
             break;
 
-        case waitLit:
-            state = A0? lit: waitLit;
+        case waitA0:
+            state = A0 ? waitA0 : waitPress;
             break;
-        
-        case lit:
-            state = A0? lit: waitUnLit;
-            break;
-
         default:
             state = start;
             break;
     }
 
     switch (state) {        //ACTIONS
-        case start: break;
+        case start:
+            b = 0x01;
+        break;
 
-        case waitUnLit: break;
+        case waitPress: break;
 
-        case unLit:
-            b = 0x01;            
+        case buttonPress:
+            b = (!b) & 0x03;
             break;
-    
-        case waitLit: break;
+        case waitA0: break;
+    }
 
-        case lit:
-            b = 0x02;
-            break;
-    }   
-    
     PORTB = b;
     return state;
 }
