@@ -69,7 +69,7 @@ int securityDoor(int state) {
             break;
 
 	    case buttonY:
-		    if (prevState == pressPound) { state = unlock; }
+		    if (prevState == pressPound) { state = tmpB ? lock: unlock; }
             else if (state == 0x02) { state = buttonY; }
             else { state = wait; }
             break;

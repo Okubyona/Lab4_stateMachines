@@ -52,6 +52,14 @@ tests = [
                 {'inputs': [('PINA',0x00)], 'iterations': 3 }],
         'expected': [('PORTB', 0x00)],
     },
+    {'description': 'Check lock using combination',
+        'steps': [ {'inputs': [('PINA',0x04)], 'iterations': 13 },
+                {'inputs': [('PINA',0x02)], 'iterations': 3 },
+                {'inputs': [('PINA',0x00)], 'iterations': 3 },
+                {'inputs': [('PINA',0x04)], 'iterations': 13 },
+                {'inputs': [('PINA',0x02)], 'iterations': 3 }],
+        'expected': [('PORTB', 0x00)],
+    },
     ]
 
 # Optionally you can add a set of "watch" variables these need to be global or static and may need
