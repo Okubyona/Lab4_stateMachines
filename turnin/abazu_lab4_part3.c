@@ -1,15 +1,15 @@
 /*	Author: Andrew Bazua
  *  Partner(s) Name:
- *	Lab Section:023
+ *	Lab Section:024
  *	Assignment: Lab #4  Exercise #3
- *	Exercise Description: [A household has a digital combination deadbolt lock 
-        system on the doorway. The system has buttons on a keypad. Button 'X' 
-        connects to PA0, 'Y' to PA1, and '#' to PA2. Pressing and releasing 
-        '#', then pressing 'Y', should unlock the door by setting PB0 to 1. 
-        Any other sequence fails to unlock. Pressing a button from inside the 
-        house (PA7) locks the door (PB0=0). For debugging purposes, give each 
-        state a number, and always write the current state to PORTC (consider 
-        using the enum state variable). Also, be sure to check that only one 
+ *	Exercise Description: [A household has a digital combination deadbolt lock
+        system on the doorway. The system has buttons on a keypad. Button 'X'
+        connects to PA0, 'Y' to PA1, and '#' to PA2. Pressing and releasing
+        '#', then pressing 'Y', should unlock the door by setting PB0 to 1.
+        Any other sequence fails to unlock. Pressing a button from inside the
+        house (PA7) locks the door (PB0=0). For debugging purposes, give each
+        state a number, and always write the current state to PORTC (consider
+        using the enum state variable). Also, be sure to check that only one
         button is pressed at a time.]
  *
  *	I acknowledge all content contained herein, excluding template or example
@@ -50,6 +50,9 @@ int securityDoor(int state) {
     switch (state) {        //TRANSITIONS
         case init:
             state = wait;
+            tmpB = 0x00;
+            prevState = init;
+            tmpC = 0x00;
             break;
 
         case wait:
@@ -59,13 +62,13 @@ int securityDoor(int state) {
             else if (tmpA == 0x80) { state = lock; }
             else { state = wait; }
             break;
-        
+
         case pressX:
             if (tmpA == 0x01) { state = pressX; }
             else { state = wait; }
             break;
 
-	    case buttonY: 
+	    case buttonY:
 		    if (prevState == pressPound) { state = unlock; }
             else if (state == 0x02) { state = buttonY; }
             else { state = wait; }
@@ -76,7 +79,7 @@ int securityDoor(int state) {
             else { state = wait; }
             break;
 
-        case lock: 
+        case lock:
             if (tmpA == 0x80) { state = lock; }
             else { state = wait; }
             break;
@@ -88,21 +91,21 @@ int securityDoor(int state) {
     }
 
     switch (state) {        //ACTIONS
-        case init: 
+        case init:
             tmpB = 0x00;
             prevState = init;
-            tmpC = 0x00;            
+            tmpC = 0x00;
             break;
 
-        case wait: 
+        case wait:
             tmpC = wait;
             break;
 
-        case pressX: 
-            tmpC = pressX;        
-            break;    
+        case pressX:
+            tmpC = pressX;
+            break;
 
-        case buttonY: 
+        case buttonY:
             tmpC = buttonY;
             break;
 
@@ -110,7 +113,7 @@ int securityDoor(int state) {
             tmpC = pressPound;
             prevState = pressPound;
             break;
-        
+
         case lock:
             tmpB = 0x00;
             tmpC = lock;

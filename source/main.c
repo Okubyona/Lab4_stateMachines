@@ -1,11 +1,16 @@
 /*	Author: Andrew Bazua
  *  Partner(s) Name:
  *	Lab Section:024
- *	Assignment: Lab #4  Exercise #2
- *	Exercise Description: [Buttons are connected to PA0 and PA1. Output for PORTC
-        is initially 7. Pressing PA0 increments PORTC once (stopping at 9).
-        Pressing PA1 decrements PORTC once (stopping at 0). If both buttons are
-        depressed (even if not initially simultaneously), PORTC resets to 0.]
+ *	Assignment: Lab #4  Exercise #3
+ *	Exercise Description: [A household has a digital combination deadbolt lock
+        system on the doorway. The system has buttons on a keypad. Button 'X'
+        connects to PA0, 'Y' to PA1, and '#' to PA2. Pressing and releasing
+        '#', then pressing 'Y', should unlock the door by setting PB0 to 1.
+        Any other sequence fails to unlock. Pressing a button from inside the
+        house (PA7) locks the door (PB0=0). For debugging purposes, give each
+        state a number, and always write the current state to PORTC (consider
+        using the enum state variable). Also, be sure to check that only one
+        button is pressed at a time.]
  *
  *	I acknowledge all content contained herein, excluding template or example
  *	code, is my own original work.
@@ -15,94 +20,112 @@
 #include "simAVRHeader.h"
 #endif
 
-typedef enum States {init, wait, increment, waitInc, decrement, waitDec, reset} States;
+typedef enum States {init, wait, pressX, buttonY, pressPound, lock, unlock} States;
 
-int counter(int);
+int securityDoor(int);
 
 int main(void) {
     /* Insert DDR and PORT initializations */
     DDRA = 0x00; PORTA = 0xFF;
+    DDRB = 0xFF; PORTB = 0x00;
     DDRC = 0xFF; PORTC = 0x00;
 
     States state = init;
+
     /* Insert your solution below */
     while (1) {
-        state = counter(state);
+        state = securityDoor(state);
     }
     return 1;
 }
 
-int counter(int state) {
+int securityDoor(int state) {
     static unsigned char tmpC;
+    static unsigned char tmpB;
+    static unsigned char prevState;
 
-    unsigned char A0 = PINA & 0x01;
-    unsigned char A1 = PINA & 0x02;
+    unsigned char tmpA = PINA;
+
 
     switch (state) {        //TRANSITIONS
         case init:
             state = wait;
-            tmpC = 0x07;
+            tmpB = 0x00;
+            prevState = init;
+            tmpC = 0x00;
             break;
+
         case wait:
-            if (!A0 && !A1) { state = wait; }
-            else if (A0 && !A1) { state = increment; }
-            else if (!A0 && A1) { state = decrement; }
-            else if (A0 && A1) { state = reset; }
+            if (tmpA == 0x01) { state = pressX; }
+            else if (tmpA  == 0x02) { state = buttonY; }
+            else if (tmpA == 0x04) { state = pressPound; }
+            else if (tmpA == 0x80) { state = lock; }
+            else { state = wait; }
             break;
 
-        case increment:
-            state = waitInc;
+        case pressX:
+            if (tmpA == 0x01) { state = pressX; }
+            else { state = wait; }
             break;
 
-        case waitInc:
-            if (A0 && !A1) { state = waitInc; }
-            else if (!A0 && A1) { state = decrement; }
-            else if (A0 && A1) { state = reset; }
-            else { state = wait;}
+	    case buttonY:
+		    if (prevState == pressPound) { state = unlock; }
+            else if (state == 0x02) { state = buttonY; }
+            else { state = wait; }
             break;
 
-        case decrement:
-            state = waitDec;
+        case pressPound:
+            if (tmpA == 0x04) { state = pressPound; }
+            else { state = wait; }
             break;
 
-        case waitDec:
-            if (A0 && !A1) { state = increment; }
-            else if (!A0 && A1) { state = waitDec; }
-            else if (A0 && A1) { state = reset; }
-            else { state = wait;}
+        case lock:
+            if (tmpA == 0x80) { state = lock; }
+            else { state = wait; }
             break;
 
-        case reset:
-            state = (A0 && A1) ? reset: wait;
-            break;
-
-        default:
-            state = wait;
+        case unlock:
+            if (tmpA) { state = unlock; }
+            else { state = wait; }
             break;
     }
 
     switch (state) {        //ACTIONS
-        case wait: break;
-
-        case increment:
-            if (tmpC < 9) { ++tmpC; }
+        case init:
+            tmpB = 0x00;
+            prevState = init;
+            tmpC = 0x00;
             break;
 
-        case waitInc:
+        case wait:
+            tmpC = wait;
             break;
 
-        case decrement:
-            if (tmpC > 0) { --tmpC; }
+        case pressX:
+            tmpC = pressX;
             break;
 
-        case waitDec:
+        case buttonY:
+            tmpC = buttonY;
             break;
 
-        case reset:
-            tmpC = 0;
+        case pressPound:
+            tmpC = pressPound;
+            prevState = pressPound;
+            break;
+
+        case lock:
+            tmpB = 0x00;
+            tmpC = lock;
+            break;
+
+        case unlock:
+            tmpB = 0x01;
+            tmpC = unlock;
             break;
     }
 
+    PORTB = tmpB;
     PORTC = tmpC;
     return state;
 }
