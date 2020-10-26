@@ -47,7 +47,7 @@ int counter(int state) {
             if (!A0 && !A1) { state = wait; }
             else if (A0 && !A1) { state = increment; }
             else if (!A0 && A1) { state = decrement; }
-            else if (!A0 && !A1) { state = reset; }
+            else if (A0 && A1) { state = reset; }
             break;
 
         case increment:
