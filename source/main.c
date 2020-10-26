@@ -1,16 +1,11 @@
 /*	Author: Andrew Bazua
  *  Partner(s) Name:
  *	Lab Section:024
- *	Assignment: Lab #4  Exercise #3
- *	Exercise Description: [A household has a digital combination deadbolt lock
-        system on the doorway. The system has buttons on a keypad. Button 'X'
-        connects to PA0, 'Y' to PA1, and '#' to PA2. Pressing and releasing
-        '#', then pressing 'Y', should unlock the door by setting PB0 to 1.
-        Any other sequence fails to unlock. Pressing a button from inside the
-        house (PA7) locks the door (PB0=0). For debugging purposes, give each
-        state a number, and always write the current state to PORTC (consider
-        using the enum state variable). Also, be sure to check that only one
-        button is pressed at a time.]
+ *	Assignment: Lab #4  Exercise #1
+ *	Exercise Description: [PB0 and PB1 each connect to an LED, and PB0's LED is
+        initially on. Pressing a button connected to PA0 turns off PB0's LED and
+        turns on PB1's LED, staying that way after button release. Pressing the
+        button again turns off PB1's LED and turns on PB0's LED.]
  *
  *	I acknowledge all content contained herein, excluding template or example
  *	code, is my own original work.
@@ -20,112 +15,65 @@
 #include "simAVRHeader.h"
 #endif
 
-typedef enum States {init, wait, pressX, buttonY, pressPound, lock, unlock} States;
+typedef enum States {start, waitPress, buttonPress, waitA0} States;
 
-int securityDoor(int);
+int lightTick(int);
 
 int main(void) {
     /* Insert DDR and PORT initializations */
     DDRA = 0x00; PORTA = 0xFF;
     DDRB = 0xFF; PORTB = 0x00;
-    DDRC = 0xFF; PORTC = 0x00;
 
-    States state = init;
+    States state = start;
 
     /* Insert your solution below */
     while (1) {
-        state = securityDoor(state);
+        state = lightTick(state);
     }
     return 1;
 }
 
-int securityDoor(int state) {
-    static unsigned char tmpC;
-    static unsigned char tmpB;
-    static unsigned char prevState;
+int lightTick(int state) {
+    static unsigned char b = 0x01;
 
-    unsigned char tmpA = PINA;
-
+    unsigned char A0 = PINA & 0x01;
 
     switch (state) {        //TRANSITIONS
-        case init:
-            state = wait;
-            tmpB = 0x00;
-            prevState = init;
-            tmpC = 0x00;
+        case start:
+            state = waitPress;
+            b = 0x01;
             break;
 
-        case wait:
-            if (tmpA == 0x01) { state = pressX; }
-            else if (tmpA  == 0x02) { state = buttonY; }
-            else if (tmpA == 0x04) { state = pressPound; }
-            else if (tmpA == 0x80) { state = lock; }
-            else { state = wait; }
+        case waitPress:
+            state = A0 ? buttonPress : waitPress;
             break;
 
-        case pressX:
-            if (tmpA == 0x01) { state = pressX; }
-            else { state = wait; }
+        case buttonPress:
+            state = waitA0;
             break;
 
-	    case buttonY:
-		    if (prevState == pressPound) { state = tmpB ? lock: unlock; }
-            else if (state == 0x02) { state = buttonY; }
-            else { state = wait; }
+        case waitA0:
+            state = A0 ? waitA0 : waitPress;
             break;
-
-        case pressPound:
-            if (tmpA == 0x04) { state = pressPound; }
-            else { state = wait; }
-            break;
-
-        case lock:
-            if (tmpA == 0x80) { state = lock; }
-            else { state = wait; }
-            break;
-
-        case unlock:
-            if (tmpA) { state = unlock; }
-            else { state = wait; }
+        default:
+            state = start;
             break;
     }
 
     switch (state) {        //ACTIONS
-        case init:
-            tmpB = 0x00;
-            prevState = init;
-            tmpC = 0x00;
-            break;
+        case start:
+            b = 0x01;
+        break;
 
-        case wait:
-            tmpC = wait;
-            break;
+        case waitPress: break;
 
-        case pressX:
-            tmpC = pressX;
+        case buttonPress:
+            if (b == 0x01) { b = 0x02; }
+            else { b = 0x01; }
             break;
-
-        case buttonY:
-            tmpC = buttonY;
-            break;
-
-        case pressPound:
-            tmpC = pressPound;
-            prevState = pressPound;
-            break;
-
-        case lock:
-            tmpB = 0x00;
-            tmpC = lock;
-            break;
-
-        case unlock:
-            tmpB = 0x01;
-            tmpC = unlock;
-            break;
+        case waitA0: break;
     }
 
-    PORTB = tmpB;
-    PORTC = tmpC;
+    PORTB = b;
     return state;
 }

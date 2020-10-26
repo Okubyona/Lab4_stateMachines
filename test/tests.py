@@ -17,53 +17,18 @@
 tests = [
     {'description': 'Check initialization',
         'steps': [ {'inputs': [('PINA',0x00)], 'iterations': 13 } ],
-        'expected': [('PORTB', 0x00)],
-    },
-    {'description': 'Check multi-button press',
-        'steps': [ {'inputs': [('PINA',0xFF) ], 'iterations': 13 },
-                {'inputs': [('PINA',0x00) ], 'iterations': 2 }],
-        'expected': [('PORTB', 0x00),],
-        #'expected': [('PORTC', 0x08),],
-    },
-    {'description': 'Check X',
-        'steps': [ {'inputs': [('PINA',0x01) ], 'iterations': 13 },
-                {'inputs': [('PINA',0x00) ], 'iterations': 2 }],
-        'expected': [('PORTB', 0x00),]
-    },
-    {'description': 'Check Y',
-        'steps': [ {'inputs': [('PINA',0x02)], 'iterations': 13 },
-                {'inputs': [('PINA',0x00)], 'iterations': 3 }],
-        'expected': [('PORTB', 0x00)],
-    },
-    {'description': 'Check #',
-        'steps': [ {'inputs': [('PINA',0x04)], 'iterations': 13 },
-                {'inputs': [('PINA',0x00)], 'iterations': 3 }],
-        'expected': [('PORTB', 0x00)],
-    },
-    {'description': 'Check correct combination',
-        'steps': [ {'inputs': [('PINA',0x04)], 'iterations': 13 },
-                {'inputs': [('PINA',0x02)], 'iterations': 3 },
-                {'inputs': [('PINA',0x00)], 'iterations': 3 }],
         'expected': [('PORTB', 0x01)],
     },
-    {'description': 'Check door lock from inside',
-        'steps': [ {'inputs': [('PINA',0x00)], 'iterations': 3 },
-                {'inputs': [('PINA',0x80)], 'iterations': 13 },
-                {'inputs': [('PINA',0x00)], 'iterations': 3 }],
-        'expected': [('PORTB', 0x00)],
+    {'description': 'Check button press',
+        'steps': [ {'inputs': [('PINA',0x00) ], 'iterations': 3 },
+                {'inputs': [('PINA',0x01) ], 'iterations': 2 }],
+        'expected': [('PORTB', 0x02),],
+
     },
-    {'description': 'Check lock using combination',
-        'steps': [ {'inputs': [('PINA',0x04)], 'iterations': 13 },
-                {'inputs': [('PINA',0x02)], 'iterations': 3 },
-                {'inputs': [('PINA',0x00)], 'iterations': 3 },
-                {'inputs': [('PINA',0x04)], 'iterations': 13 },
-                {'inputs': [('PINA',0x02)], 'iterations': 3 }],
-        'expected': [('PORTB', 0x00)],
-    },
+    
     ]
 
 # Optionally you can add a set of "watch" variables these need to be global or static and may need
 # to be scoped at the function level (for static variables) if there are naming conflicts. The
 # variables listed here will display everytime you hit (and stop at) a breakpoint
-watch = ['securityDoor::tmpA','securityDoor::tmpB', 'main::state', 'PORTB',
-    'PORTC', 'PINA']
+watch = ['lightTick::b', 'main::state', 'PORTA', 'PORTB']
