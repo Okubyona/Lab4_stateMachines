@@ -15,24 +15,17 @@
 # that they are not ran in isolation but in the order shown and the state of the device is not reset or
 # altered in between executions (unless preconditions are used).
 tests = [
-    {'description': 'Check initialization of B0 & B1 lights',
-        'steps': [ {'inputs': [('PINA',0x00)], 'iterations': 1 } ],
+    {'description': 'Check initialization',
+        'steps': [ {'inputs': [('PINA',0x00)], 'iterations': 13 } ],
         'expected': [('PORTB', 0x01)],
     },
-    {'description': 'Check single button press',
-        'steps': [ {'inputs': [('PINA',0x00), ], 'iterations': 3 } ],
-        'expected': [('PORTB', 0x01),],
-        'steps': [ {'inputs': [('PINA',0x01), ], 'iterations': 1 } ],
-        'expected': [('PORTB', 0x00),],
+    {'description': 'Check button press',
+        'steps': [ {'inputs': [('PINA',0x00) ], 'iterations': 3 },
+                {'inputs': [('PINA',0x01) ], 'iterations': 2 }],
+        'expected': [('PORTB', 0x02),],
+
     },
-    {'description': 'Check if waitA0 works',
-        'steps': [ {'inputs': [('PINA',0x01)], 'iterations': 3 } ],
-        'expected': [('PORTB', 0x00)],
-    },
-    {'description': 'Check if waitA0 returns to waitPress',
-        'steps': [ {'inputs': [('PINA',0x00)], 'iterations': 1 } ],
-        'expected': [('PORTB', 0x00)],
-    },
+    
     ]
 
 # Optionally you can add a set of "watch" variables these need to be global or static and may need

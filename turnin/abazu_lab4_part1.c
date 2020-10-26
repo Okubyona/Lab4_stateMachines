@@ -41,6 +41,7 @@ int lightTick(int state) {
     switch (state) {        //TRANSITIONS
         case start:
             state = waitPress;
+            b = 0x01;
             break;
 
         case waitPress:
@@ -67,7 +68,8 @@ int lightTick(int state) {
         case waitPress: break;
 
         case buttonPress:
-            b = (!b) & 0x03;
+            if (b == 0x01) { b = 0x02; }
+            else { b = 0x01; }
             break;
         case waitA0: break;
     }
